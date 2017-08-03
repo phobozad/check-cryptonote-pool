@@ -34,22 +34,41 @@ urlParams = dict (
 	longpoll="false"
 )
 
+
+def prefixToMultiplier(prefix):
+	prefix=prefix.strip().lower()
+	# Note that cryptonote-universal-pool's API mis-calculates when it scales the hashrate
+	# We mirror that miscalculation (using 1024 instead of 1000) here to get the true hashrate in H/s
+	# This conversion is in /lib/api.js in the cryptonote-universal-pool source code
+	switcher = {
+		"h":	1,
+		"kh":	1024,
+		"mh":	1024 ** 2,
+		"gh":	1024 ** 3,
+		"th":	1024 ** 4,
+		"ph":	1024 ** 5
+	}
+	return switcher.get(prefix, 0)
+
+
 # Get the data & parse it
 
 response = requests.get(url=url, params=urlParams)
 
 if response.status_code == requests.codes.ok:
 	data = response.json()
-	hashRate = float(data["stats"]["hashrate"].split()[0])
+	data = data["stats"]["hashrate"].split()
+	
+	hashRate = data[0] * prefixToMultiplier(data[1])
 	if hashRate < critThresh:
 		exitCode=2
-		output="Critical - Hash rate: {}/s".format(data["stats"]["hashrate"])
+		output="Critical - Hash rate: {} {}/s".format(data[0],data[1])
 	elif hashRate < warnThresh:
 		exitCode=1
-		output="Warning - Hash rate: {}/s".format(data["stats"]["hashrate"])
+		output="Warning - Hash rate: {} {}/s".format(data[0],data[1])
 	else:
 		exitCode=0
-		output="OK - Hash rate: {}/s".format(data["stats"]["hashrate"])
+		output="OK - Hash rate: {} {}/s".format(data[0],data[1])
 
 	output += " | Hashrate={};{};{};;".format(hashRate, warnThresh, critThresh)
 	print output
