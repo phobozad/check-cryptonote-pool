@@ -57,7 +57,14 @@ response = requests.get(url=url, params=urlParams)
 
 if response.status_code == requests.codes.ok:
 	data = response.json()
-	data = data["stats"]["hashrate"].split()
+
+	try:
+		data = data["stats"]["hashrate"].split()
+	except KeyError:
+		exitCode=3
+		print "Error - hashrate not found in API data"
+		sys.exit(exitCode)
+		
 	
 	hashRate = float(data[0]) * prefixToMultiplier(data[1])
 	if hashRate < critThresh:
