@@ -61,10 +61,9 @@ if response.status_code == requests.codes.ok:
 	try:
 		data = data["stats"]["hashrate"].split()
 	except KeyError:
-		exitCode=3
-		print "Error - hashrate not found in API data"
-		sys.exit(exitCode)
-		
+		# when the hashrate is zero, API doesn't return a hashrate item
+		data = "0.00 H"
+		data = data["stats"]["hashrate"].split()
 	
 	hashRate = float(data[0]) * prefixToMultiplier(data[1])
 	if hashRate < critThresh:
