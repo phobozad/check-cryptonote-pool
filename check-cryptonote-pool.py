@@ -59,7 +59,7 @@ if response.status_code == requests.codes.ok:
 	data = response.json()
 	data = data["stats"]["hashrate"].split()
 	
-	hashRate = data[0] * prefixToMultiplier(data[1])
+	hashRate = float(data[0]) * prefixToMultiplier(data[1])
 	if hashRate < critThresh:
 		exitCode=2
 		output="Critical - Hash rate: {} {}/s".format(data[0],data[1])
